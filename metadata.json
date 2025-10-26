@@ -1,0 +1,7 @@
+{
+  "name": "Gate Group Scan Intelligent",
+  "description": "Un asistente impulsado por IA para optimizar el proceso de llenado de bandejas de vuelo. Utiliza una cámara para identificar productos y Gemini para validarlos contra el menú del vuelo, proporcionando retroalimentación y alertas en tiempo real al operador.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
