@@ -1,0 +1,77 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+
+jobs:
+  # -------------------------------
+  # 1️⃣ Entrega a ambiente de prueba
+  # -------------------------------
+  deploy-to-test:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build project
+        run: |
+          echo "Compilando artefactos para pruebas..."
+          # Aquí el comando de build de tu proyecto
+          # ej: npm install && npm run build
+
+      - name: Deploy to Test Server
+        run: |
+          echo "Desplegando a ambiente de prueba..."
+          scp -r ./dist/* user@test-server:/var/www/test/
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.TEST_SSH_KEY }}
+
+  # -------------------------------
+  # 2️⃣ Entrega a preproducción
+  # -------------------------------
+  deploy-to-preprod:
+    runs-on: ubuntu-latest
+    needs: deploy-to-test  
+    if: github.ref == 'refs/heads/main'  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build project
+        run: |
+          echo "Compilando artefactos para preproducción..."
+          # comando de build
+          # ej: npm install && npm run build
+
+      - name: Deploy to Preprod Server
+        run: |
+          echo "Desplegando a ambiente de preproducción..."
+          scp -r ./dist/* user@preprod-server:/var/www/preprod/
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PREPROD_SSH_KEY }}
+
+  # -------------------------------
+  # 3️⃣ Despliegue automatizado (Producción)
+  # -------------------------------
+  deploy-to-prod:
+    runs-on: ubuntu-latest
+    needs: deploy-to-preprod  
+    if: github.ref == 'refs/heads/main'  
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build project
+        run: |
+          echo "Compilando artefactos para producción..."
+          # comando de build
+          # ej: npm install && npm run build
+
+      - name: Deploy to Production Server
+        run: |
+          echo "Desplegando a producción..."
+          scp -r ./dist/* user@prod-server:/var/www/prod/
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.PROD_SSH_KEY }}
